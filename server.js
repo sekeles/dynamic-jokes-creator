@@ -1,4 +1,3 @@
-
 // server.js — שרת Node.js עבור יצירת בדיחות / ציטוטים
 
 const express = require('express');
@@ -14,8 +13,15 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 app.use(cors());
 app.use(bodyParser.json());
 
+const extendedTopics = [
+  "חיים", "אהבה", "עבודה", "פילוסופיה", "בינה מלאכותית",
+  "חברות", "משפחה", "טכנולוגיה", "פסיכולוגיה", "ילדות",
+  "בריאות", "מדע", "טבע", "מוזיקה", "אוכל",
+  "מסעות", "הומור", "אקטואליה", "רוחניות", "פוליטיקה"
+];
+
 app.post('/generate', async (req, res) => {
-  const { age, gender, topic, keywords, quote, language } = req.body;
+  const { age, gender, topic, keywords, quote, language, model = 'gpt-3.5-turbo' } = req.body;
 
   if (!OPENAI_API_KEY) {
     return res.status(500).json({ error: 'API key not set on server' });
@@ -36,11 +42,11 @@ app.post('/generate', async (req, res) => {
     }
   };
 
-  const runOpenAI = async (prompt) => {
+  const runOpenAI = async (prompt, selectedModel) => {
     const response = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
-        model: 'gpt-3.5-turbo',
+        model: selectedModel,
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.9,
         max_tokens: 300
@@ -58,17 +64,13 @@ app.post('/generate', async (req, res) => {
   try {
     if (language === 'both') {
       const [jokeHe, jokeEn] = await Promise.all([
-        runOpenAI(buildPrompt('he')),
-        runOpenAI(buildPrompt('en'))
+        runOpenAI(buildPrompt('he'), model),
+        runOpenAI(buildPrompt('en'), model)
       ]);
 
-      res.json({ result: `בדיחה עברית:
-${jokeHe}
-
-Joke in English:
-${jokeEn}` });
+      res.json({ result: `בדיחה עברית:\n${jokeHe}\n\nJoke in English:\n${jokeEn}` });
     } else {
-      const result = await runOpenAI(buildPrompt(language));
+      const result = await runOpenAI(buildPrompt(language), model);
       res.json({ result });
     }
   } catch (err) {
@@ -77,12 +79,7 @@ ${jokeEn}` });
     res.status(500).json({ error: 'שגיאה בבקשת OpenAI', details: err.message });
   }
 });
-app.get('/', (req, res) => {
-  res.send(`
-    <h2>👋 ברוך הבא ל-API של מחולל הבדיחות והציטוטים!</h2>
-    <p>כדי להשתמש בשרת, שלחו בקשת POST לכתובת <code>/generate</code> עם המידע הדרוש בפורמט JSON.</p>
-  `);
-});
+
 app.listen(PORT, () => {
   console.log(`🚀 Joke/Quote API is running on http://localhost:${PORT}`);
 });

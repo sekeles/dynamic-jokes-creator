@@ -110,7 +110,7 @@
       };
 
       const output = document.getElementById('output');
-      output.value = "⏳ מתחבר לשרת...";
+      output.value = "⏳ פונה לשרת... ייתכן שהשרת מתעורר, המתן כמה שניות...";
 
       try {
         const response = await fetch('https://dynamic-jokes-creator.onrender.com/generate', {
@@ -122,7 +122,7 @@
         const result = await response.json();
         output.value = result.result || result.error;
       } catch (err) {
-        output.value = '⚠️ שגיאה בחיבור לשרת. ייתכן שהשרת מתעורר – אנא המתן כ-30 שניות ונסה שוב.';
+        output.value = '⚠️ שגיאה בחיבור לשרת. ייתכן שהוא מתעורר – נסה שוב בעוד כחצי דקה.';
       }
     }
   </script>
