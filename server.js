@@ -77,7 +77,12 @@ ${jokeEn}` });
     res.status(500).json({ error: 'שגיאה בבקשת OpenAI', details: err.message });
   }
 });
-
+app.get('/', (req, res) => {
+  res.send(`
+    <h2>👋 ברוך הבא ל-API של מחולל הבדיחות והציטוטים!</h2>
+    <p>כדי להשתמש בשרת, שלחו בקשת POST לכתובת <code>/generate</code> עם המידע הדרוש בפורמט JSON.</p>
+  `);
+});
 app.listen(PORT, () => {
   console.log(`🚀 Joke/Quote API is running on http://localhost:${PORT}`);
 });
