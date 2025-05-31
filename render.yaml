@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: dynamic-jokes-creator
+    env: node
+    plan: free
+    region: oregon
+    branch: main
+    rootDir: .
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
