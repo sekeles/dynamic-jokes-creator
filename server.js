@@ -33,7 +33,7 @@ const translateToEnglish = async (text) => {
 };
 
 app.post('/generate', async (req, res) => {
-  const { age, gender, topic, keywords, quote, language, model = 'gpt-3.5-turbo', temperature } = req.body;
+  const { age, gender, topic, keywords, quote, language, model = 'gpt-3.5-turbo', temperature, instructions = '' } = req.body;
 
   if (!OPENAI_API_KEY) {
     return res.status(500).json({ error: 'API key not set on server' });
@@ -50,13 +50,13 @@ app.post('/generate', async (req, res) => {
     }
 
     if (quote) {
-      return isHebrew
-        ? `מצא ציטוט מעורר השראה בנושא "${topic}"${keywords ? ` שכולל את המילים: ${keywords}` : ''}. ציין מי אמר אותו.`
-        : `Find an inspiring quote on the topic of "${topicLang}"${keywordsLang ? ` that includes the words: ${keywordsLang}` : ''}. Mention who said it.`;
+     return isHebrew
+  ? `מצא ציטוט מעורר השראה בנושא "${topic}"${keywords ? ` שכולל את המילים: ${keywords}` : ''}. ציין מי אמר אותו.${instructions ? ` ${instructions}` : ''}`
+  : `Find an inspiring quote on the topic of "${topic}"${keywords ? ` that includes the words: ${keywords}` : ''}. Mention who said it.${instructions ? ` ${instructions}` : ''}`;
     } else {
-      return isHebrew
-        ? `צור בדיחה מקורית, מצחיקה ואינטליגנטית בנושא "${topic}". הימנע משימוש בגיל או מגדר של המשתמש בטקסט עצמו.${keywords ? ` כלול את המילים: ${keywords}.` : ''}`
-        : `Create an original, clever and funny joke on the topic of "${topicLang}". Avoid using the user's age or gender in the text.${keywordsLang ? ` Include the words: ${keywordsLang}.` : ''}`;
+     return isHebrew
+  ? `צור בדיחה מקורית, מצחיקה ואינטליגנטית בנושא "${topic}". הימנע משימוש בגיל או מגדר של המשתמש בטקסט עצמו.${keywords ? ` כלול את המילים: ${keywords}.` : ''}${instructions ? ` ${instructions}` : ''}`
+  : `Create an original, clever and funny joke on the topic of "${topic}". Avoid using the user's age or gender in the text.${keywords ? ` Include the words: ${keywords}.` : ''}${instructions ? ` ${instructions}` : ''}`;
     }
   };
 
