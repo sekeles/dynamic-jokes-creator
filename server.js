@@ -11,13 +11,6 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 app.use(cors());
 app.use(bodyParser.json());
 
-const extendedTopics = [
-  "חיים", "אהבה", "עבודה", "פילוסופיה", "בינה מלאכותית",
-  "חברות", "משפחה", "טכנולוגיה", "פסיכולוגיה", "ילדות",
-  "בריאות", "מדע", "טבע", "מוזיקה", "אוכל",
-  "מסעות", "הומור", "אקטואליה", "רוחניות", "פוליטיקה"
-];
-
 const translateToEnglish = async (text) => {
   const response = await axios.post(
     'https://api.openai.com/v1/chat/completions',
@@ -90,10 +83,17 @@ app.post('/generate', async (req, res) => {
         runOpenAI(await buildPrompt('he'), model),
         runOpenAI(await buildPrompt('en'), model)
       ]);
-      res.json({ result: `בדיחה עברית:\n${jokeHe}\n\nJoke in English:\n${jokeEn}` });
+
+      const labelHe = quote ? 'ציטוט בעברית' : 'בדיחה עברית';
+      const labelEn = quote ? 'Quote in English' : 'Joke in English';
+
+      res.json({ result: `${labelHe}:\n${jokeHe}\n\n${labelEn}:\n${jokeEn}` });
     } else {
       const result = await runOpenAI(await buildPrompt(language), model);
-      res.json({ result });
+      const prefix = quote
+        ? (language === 'he' ? 'ציטוט:\n' : 'Quote:\n')
+        : (language === 'he' ? 'בדיחה:\n' : 'Joke:\n');
+      res.json({ result: `${prefix}${result}` });
     }
   } catch (err) {
     console.error("OpenAI API error:", err.message);
@@ -101,13 +101,14 @@ app.post('/generate', async (req, res) => {
     res.status(500).json({ error: 'שגיאה בבקשת OpenAI', details: err.message });
   }
 });
-// מענה ידידותי לקריאה ישירה ל-root של השרת
+
 app.get('/', (req, res) => {
   res.send(`
     <h2>🔧 שרת בדיחות / ציטוטים פעיל</h2>
     <p>כדי להשתמש, שלח בקשת POST ל-<code>/generate</code> עם פרטי המשתמש.</p>
   `);
 });
+
 app.listen(PORT, () => {
   console.log(`🚀 Joke/Quote API is running on http://localhost:${PORT}`);
 });
