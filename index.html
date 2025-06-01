@@ -130,10 +130,15 @@
     <label>מילים שחייבות להופיע (לא חובה):</label>
     <input type="text" id="keywords" placeholder="למשל: חתול, שמש">
 
+<div class="form-group">
+  <label for="instructions">הנחיות מיוחדות (לא חובה):</label>
+  <input type="text" id="instructions" name="instructions" placeholder="הימנע מבדיחות ידועות שמופיעות במאגרי מידע">
+</div>
+
     <label>האם במקום בדיחה להציג ציטוט?</label>
     <select id="quote" onchange="adjustTemperatureRange()">
         <option value="false">לא</option>
-        <option value="true">כן</option>
+        <option value="true">כן תמצא ציטוט</option>
     </select>
 
     <label>בחר שפה:</label>
@@ -195,6 +200,7 @@
                 language: document.getElementById('language').value,
                 model: document.getElementById('model').value,
                 temperature: parseFloat(document.getElementById('temperature').value)
+		instructions: document.getElementById('instructions').value
             };
 
             const output = document.getElementById('output');
