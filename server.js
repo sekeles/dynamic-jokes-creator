@@ -101,7 +101,13 @@ app.post('/generate', async (req, res) => {
     res.status(500).json({ error: 'שגיאה בבקשת OpenAI', details: err.message });
   }
 });
-
+// מענה ידידותי לקריאה ישירה ל-root של השרת
+app.get('/', (req, res) => {
+  res.send(`
+    <h2>🔧 שרת בדיחות / ציטוטים פעיל</h2>
+    <p>כדי להשתמש, שלח בקשת POST ל-<code>/generate</code> עם פרטי המשתמש.</p>
+  `);
+});
 app.listen(PORT, () => {
   console.log(`🚀 Joke/Quote API is running on http://localhost:${PORT}`);
 });
