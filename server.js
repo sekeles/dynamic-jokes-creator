@@ -1,3 +1,5 @@
+// server.js — שרת Node.js עבור יצירת בדיחות / ציטוטים
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -31,7 +33,7 @@ const translateToEnglish = async (text) => {
 };
 
 app.post('/generate', async (req, res) => {
-  const { age, gender, topic, keywords, quote, language, model = 'gpt-3.5-turbo' } = req.body;
+  const { age, gender, topic, keywords, quote, language, model = 'gpt-3.5-turbo', temperature } = req.body;
 
   if (!OPENAI_API_KEY) {
     return res.status(500).json({ error: 'API key not set on server' });
@@ -58,13 +60,25 @@ app.post('/generate', async (req, res) => {
     }
   };
 
-  const runOpenAI = async (prompt, selectedModel) => {
+  const resolveTemperature = () => {
+    let t = typeof temperature === 'number' ? temperature : null;
+
+    if (quote) {
+      if (t === null) t = 0.2;
+      return Math.max(0, Math.min(0.5, t));
+    } else {
+      if (t === null) t = 0.8;
+      return Math.max(0, Math.min(1, t));
+    }
+  };
+
+  const runOpenAI = async (prompt, selectedModel, temp) => {
     const response = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
         model: selectedModel,
         messages: [{ role: 'user', content: prompt }],
-        temperature: 0.9,
+        temperature: temp,
         max_tokens: 300
       },
       {
@@ -78,10 +92,12 @@ app.post('/generate', async (req, res) => {
   };
 
   try {
+    const resolvedTemp = resolveTemperature();
+
     if (language === 'both') {
       const [jokeHe, jokeEn] = await Promise.all([
-        runOpenAI(await buildPrompt('he'), model),
-        runOpenAI(await buildPrompt('en'), model)
+        runOpenAI(await buildPrompt('he'), model, resolvedTemp),
+        runOpenAI(await buildPrompt('en'), model, resolvedTemp)
       ]);
 
       const labelHe = quote ? 'ציטוט בעברית' : 'בדיחה עברית';
@@ -89,7 +105,7 @@ app.post('/generate', async (req, res) => {
 
       res.json({ result: `${labelHe}:\n${jokeHe}\n\n${labelEn}:\n${jokeEn}` });
     } else {
-      const result = await runOpenAI(await buildPrompt(language), model);
+      const result = await runOpenAI(await buildPrompt(language), model, resolvedTemp);
       const prefix = quote
         ? (language === 'he' ? 'ציטוט:\n' : 'Quote:\n')
         : (language === 'he' ? 'בדיחה:\n' : 'Joke:\n');
